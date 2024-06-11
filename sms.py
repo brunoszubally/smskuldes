@@ -11,7 +11,9 @@ from pathlib import Path
 # Load environment variables
 load_dotenv()
 
+
 CURL_KEY = os.getenv("CURL_KEY")
+
 
 # Load hashed passwords
 file_path = Path(__file__).parent / "hashed_pw.pkl"
@@ -61,16 +63,6 @@ if authentication_status:
     '''
     st.markdown(css, unsafe_allow_html=True)
 
-    def reset_state():
-        st.session_state.uploaded_file = None
-        st.session_state.sent = False
-
-    if 'sent' not in st.session_state:
-        st.session_state.sent = False
-
-    if 'uploaded_file' not in st.session_state:
-        st.session_state.uploaded_file = None
-
     # Select message template
     message_template = st.radio(
         "Válassz egy üzenetet",
@@ -78,11 +70,11 @@ if authentication_status:
         format_func=lambda x: "Vérplazma donáció" if x == 'donation' else "Alkalmassági vizsgálat"
     )
 
-    st.session_state.uploaded_file = st.file_uploader("Töltsd fel az Excel fájlt (xlsx formátumban)", type=["xlsx"])
+    uploaded_file = st.file_uploader("Töltsd fel az Excel fájlt (xlsx formátumban)", type=["xlsx"])
 
-    if st.session_state.uploaded_file is not None:
+    if uploaded_file is not None:
         # Load the Excel file
-        data = pd.read_excel(st.session_state.uploaded_file, header=None)
+        data = pd.read_excel(uploaded_file, header=None)
 
         # Manually set the column names
         data.columns = ['name', 'phone', 'datetime'] + [f'col_{i}' for i in range(3, data.shape[1])]
@@ -115,13 +107,8 @@ if authentication_status:
                     success = False
             if success:
                 st.success("Az összes üzenet sikeresen elküldve!")
-                st.session_state.sent = True
             else:
                 st.error("Hiba történt az üzenetek küldése közben.")
-
-    if st.session_state.sent:
-        if st.button("Új SMS küldés"):
-            reset_state()
 
 # Function to verify user login
 def login(username, password):
